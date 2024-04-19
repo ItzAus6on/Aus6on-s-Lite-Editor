@@ -2,7 +2,8 @@ mod editor;
 mod terminal;
 
 use editor::Editor;
-use terminal::Terminal;
+pub use terminal::Terminal;
+pub use editor::Position;
 
 fn main() {
     Editor::default().run();

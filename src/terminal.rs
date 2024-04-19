@@ -1,4 +1,5 @@
 use std::io::{self, Write};
+use crate::Position;
 use crossterm::terminal::{
     self, 
     ClearType
@@ -7,7 +8,6 @@ use crossterm::event::{
     self,
     Event,
     KeyCode,
-    KeyEvent,
 };
 use crossterm::cursor;
 
@@ -35,14 +35,11 @@ impl Terminal{
         &self.size
     }
 
-    pub fn read_key() -> io::Result<char> {
+    pub fn read_key() -> io::Result<KeyCode> {
         loop {
-            if let Event::Key(KeyEvent{
-                code: KeyCode::Char(c),
-                ..
-            }) = event::read()? 
-            {
-                return Ok(c);
+            if let Event::Key(key) = event::read()? 
+            {   
+                return Ok(key.code)
             }
         }
     }
@@ -51,10 +48,13 @@ impl Terminal{
         terminal::Clear(ClearType::All);
     }
 
-    pub fn cursor_position(x: u16, y: u16) {
-        let x = x.saturating_add(1);
-        let y = y.saturating_add(1);
-        cursor::MoveTo(x, y);
+    pub fn cursor_position(position: &Position) {
+        let Position{mut x, mut y} = position;
+        x = x.saturating_add(1);
+        y = y.saturating_add(1);
+        let x = x as u16;
+        let y = y as u16;
+        print!("{}", cursor::MoveTo(x, y));
     }
 
     pub fn flush() -> Result<(), std::io::Error> {
@@ -62,15 +62,15 @@ impl Terminal{
     }
 
     pub fn cursor_hide() {
-        println!("{}", cursor::Hide);
+        print!("{}", cursor::Hide);
     }
 
     pub fn cursor_show() {
-        println!("{}", cursor::Show);
+        print!("{}", cursor::Show);
     }
 
     pub fn clear_current_line() {
-        terminal::Clear(ClearType::CurrentLine);
+        print!("{}", terminal::Clear(ClearType::CurrentLine));
     }
 
 }
